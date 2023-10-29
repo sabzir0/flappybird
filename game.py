@@ -1,5 +1,5 @@
 import pygame
-
+from random import randint
 
 WIDHT = 1300
 HEIGHT = 600
@@ -13,7 +13,8 @@ clock = pygame.time.Clock()
 
 class GameSprite(pygame.sprite.Sprite):
     def __init__(self, filename, coords, size, speed):
-        self.image = pygame.Surface(size=size, masks=(255,255,255))
+        self.image = pygame.transform.scale(pygame.image.load(filename), size)
+        self.original = pygame.transform.scale(pygame.image.load(filename), size)
         self.rect = self.image.get_rect()
         self.rect.center = coords
         self.speed = speed
@@ -28,11 +29,25 @@ class Bird(GameSprite):
         if keys[pygame.K_SPACE]:
             self.rect.y -= self.speed*2
 
+class Tube(GameSprite):
+    def update_up (self):
+        self.rect.x -= self.speed
+        if self.rect.x <= 0:
+            self.rect.x = WIDHT
+            self.rect = pygame.Rect(self.rect.x,self.rect.y, self.rect.width, randint(50,HEIGHT/2-50))
+            self.image = pygame.transform.scale(self.original,(self.rect.width,self.rect.height))
+
+    def update_down(self):
+        self.rect.x -= self.speed
+        if self.rect.x <= 0:
+            self.rect.x = WIDHT
+            self.rect = pygame.Rect(self.rect.x, randint(HEIGHT/2, HEIGHT-100), self.rect.width, self.rect.height)
+            self.image = pygame.transform.scale(self.original,(self.rect.width,self.rect.height))
 
 
-
-bird = Bird(None, (0, HEIGHT/2), (50,50), 5)
-
+bird = Bird("bird.png", (50, HEIGHT/2), (50,50), 5)
+up_tube = Tube("tube_up.png", (WIDHT+randint(0,100), 100), (75, 200), 4)
+down_tube = Tube("tube_down.png", (WIDHT-randint(0,100), HEIGHT+100), (75, 600), 4)
 
 game = True
 finish = False
@@ -40,9 +55,22 @@ while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
-    window.fill(background_color)
-    bird.update()
-    bird.reset()
+
+    if not finish:
+        window.fill(background_color)
+        bird.update()
+        bird.reset()
+        up_tube.update_up()
+        up_tube.reset()
+        down_tube.update_down()
+        down_tube.reset()
+
+        if pygame.sprite.collide_rect(bird,up_tube) or pygame.sprite.collide_rect(bird,down_tube):
+            finish = True
+            pygame.font.init()
+            font1 = pygame.font.Font(None, 60)
+            text = font1.render("Ти ЛОХ", True, (255,0,0))
+            window.blit(text, (WIDHT/2-100, HEIGHT/2))
 
     pygame.display.update()
     clock.tick(60)
