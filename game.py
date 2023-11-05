@@ -56,7 +56,7 @@ class Tube(GameSprite):
             self.image = pygame.transform.scale(self.original,(self.rect.width,self.rect.height))
             global score
             score += 1
-            self.speed = randint(3,10)
+            self.speed = randint(3,10)   
 
 bird = Bird("bird.png", (50, HEIGHT/2), (50,50), 5)
 up_tube = Tube("tube_up.png", (WIDHT+randint(0,100), 100), (75, 200), 4)
